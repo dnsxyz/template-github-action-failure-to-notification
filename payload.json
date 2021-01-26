@@ -197,7 +197,7 @@
         "organization": "mailscript",
         "repository": "cli",
         "buildFailed": true,
-        "commit": "(2269d56)",
+        "commit": "2269d56",
         "name": "Feat/names triggers and actions"
       }
     }
