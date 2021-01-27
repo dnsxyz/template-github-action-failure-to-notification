@@ -1,59 +1,93 @@
 # Mailscript templates: GitHub action failure to notification
 
-TBD
+You can use this template to trigger OS notifications whenever a GitHub action run fails.
+
+In this template we will achieve this by redirecting github emails through a mailscript email address (or the subset related to a particular github org), then setting a workflow that forwards to a mailscript daemon running on your local machine to bridge to the OS for notifications.
 
 ## Workflow
 
+Replace the `<username>` text with your mailscript `username` and `<personal-email>` with the email address github emails should be forwarded to (this is also where the github verification email will be sent).
+
 ```yml
-version: "0.1"
+version: '0.2'
 addresses:
-  address@mailscript.com:
+  github@<username>.mailscript.com:
     keys:
       - name: owner
         read: true
         write: true
-accessories:
-  - name: sms to me
-    type: sms
-    sms: "+123456789"
-  - name: address@mailscript.com
+triggers:
+  - name: github-action-failed
+    composition:
+      - criteria:
+          metadata.github.pr.buildFailed: true
+actions:
+  - name: mylaptop
+    type: daemon
+    config:
+      daemon: mylaptop
+  - name: forward-to-personal-email
     type: mailscript-email
-    address: address@mailscript.com
-    key: owner
+    config:
+      key: owner
+      from: github@<username>.mailscript.com
+      forward: <personal-email>
+      type: forward
 workflows:
-  - name: Alerts to sms
-    trigger:
-      accessory: address@mailscript.com
-      config:
-        times:
-          thisManySeconds: 60
-          thisManyTimes: 2
-        criterias:
-          - subjectContains: alert
-    actions:
-      - accessory: sms to me
-        config:
-          type: sms
-          text: Two alerts arrived within 60 seconds
+  - name: forward-github-to-personal
+    input: github@<username>.mailscript.com
+    action: forward-to-personal-email
+  - name: github-action-failures-to-daemon
+    input: github@<username>.mailscript.com
+    trigger: github-action-failed-trigger
+    action: mylaptop
 ```
 
 ## Manual setup
 
-Setup your sms accessory to be able to receive texts:
+Clone this repository locally.
+
+Setup a new mailscript address specifically for dealing with github emails (replacing `<username>` text with your username):
 
 ```sh
-mailscript accessories:add --name "sms to me" --sms +123456789
+mailscript addresses:add --address github@<username>.mailscript.com
 ```
 
-Setup the workflow:
+Setup an auto-forward of all emails coming into onto your preferred email address:
 
 ```sh
-mailscript workflows:add \
-  --name "2 alerts to sms" \
-  --trigger address@mailscript.com \
-  --times 2 \
-  --seconds 60 \
-  --subjectcontains alert \
-  --action "sms to me" \
-  --text "Two alerts arrived within 60 seconds"
+mailscript actions:add --name forward-to-personal --forward <personal-email> --from github@<username>.mailscript.com
+
+mailscript workflows:add --name forward-github-to-personal --input github@<username>.mailscript.com --action forward-to-personal
 ```
+
+Change github settings:
+
+```sh
+TBD
+```
+
+Setup a workflow that waits for PR failed emails:
+
+
+```sh
+mailscript actions:add --name mylaptop --daemon mylaptop
+
+mailscript triggers:add --name github-action-failed --property metadata.github.pr.buildFailed --equals true
+
+mailscript workflows:add --name github-action-failures-to-daemon --input github@<username>.mailscript.com --trigger github-action-failed --action mylaptop
+```
+
+At the root of this repo run npm to install the node dependencies:
+
+```sh
+npm install
+```
+
+Run a local daemon using the daemon named in the workflow (i.e. `mylaptop`) that triggers the `notify.js` script whenever a Github Action run failed email is received:
+
+```sh
+mailscript daemon --daemon mylaptop command "node ./notify.js"
+```
+
+The contents of the emails is passed to the script as stringified json within the environment variable `payload`.
