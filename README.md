@@ -175,7 +175,7 @@ to your preferred account but directing build failures to your local daemon.
 Run a local daemon using the daemon named in the workflow (i.e. `mylaptop`) that triggers the `notify.js` script whenever a `Github Action run failed` email is received:
 
 ```sh
-mailscript daemon --daemon mylaptop command "node ./notify.js"
+mailscript daemon --daemon mylaptop --command "node ./notify.js"
 ```
 
 The contents of the emails is passed to the script as stringified json within the environment variable `payload`.
