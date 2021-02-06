@@ -2,23 +2,26 @@ const notifier = require('node-notifier')
 const path = require('path')
 const process = require('process')
 
-const GITHUB_ICON = ''
+const GITHUB_ICON = '' // FIXME add icon
 
 function main(emailData) {
   if (
-    !emailData.metadata ||
-    !emailData.metadata.github ||
-    !emailData.metadata.github.pr
+    !emailData.github ||
+    emailData.github.type !== 'action' ||
+    !emailData.github.pr
   ) {
     return
   }
   const {
     organization,
     repository,
-    buildFailed,
     name,
     commit,
-  } = emailData.metadata.github.pr
+  } = emailData.github
+  const {
+    buildFailed,
+    commit,
+  } = emailData.github.pr
   if (
     organization == null ||
     repository == null ||

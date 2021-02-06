@@ -9,7 +9,7 @@ triggers:
   - name: github-action-failed
     composition:
       - criteria:
-          metadata.github.pr.buildFailed: true
+          github.pr.buildFailed: true
 actions:
   - name: mylaptop
     type: daemon
