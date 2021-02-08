@@ -99,7 +99,7 @@ Setup a trigger that will filter out emails that are not Github Action Run faile
 ```sh
 mailscript triggers:add \
   --name github-action-failed \
-  --property metadata.github.pr.buildFailed \
+  --property github.pr.buildFailed \
   --equals true
 ```
 
