@@ -1,6 +1,6 @@
 version: '0.2'
 addresses:
-  github@<username>.mailscript.com:
+  github@$username.mailscript.com:
     keys:
       - name: owner
         read: true
@@ -19,11 +19,11 @@ actions:
     type: mailscript-email
     config:
       key: owner
-      from: github@<username>.mailscript.com
+      from: github@$username.mailscript.com
       forward: <personal-email>
       type: forward
 workflows:
   - name: github-action-failures-to-daemon
-    input: github@<username>.mailscript.com
-    trigger: github-action-failed-trigger
+    input: github@$username.mailscript.com
+    trigger: github-action-failed
     action: mylaptop
