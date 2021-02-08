@@ -5,6 +5,8 @@ const process = require('process')
 const GITHUB_ICON = '' // FIXME add icon
 
 function main(emailData) {
+  console.log('Email received, running notification...')
+
   if (
     !emailData.github ||
     emailData.github.type !== 'action' ||
@@ -12,16 +14,9 @@ function main(emailData) {
   ) {
     return
   }
-  const {
-    organization,
-    repository,
-    name,
-    commit,
-  } = emailData.github
-  const {
-    buildFailed,
-    commit,
-  } = emailData.github.pr
+  const { organization, repository, name } = emailData.github
+  const { buildFailed, commit } = emailData.github.pr
+
   if (
     organization == null ||
     repository == null ||
